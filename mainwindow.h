@@ -11,12 +11,8 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
-    ~MainWindow();
 
 private:
-    void setupStatusBar();
-    void initializeModel();
-
     MultivariateLinearRegressionModel* m_model;
     RegressionWidget* m_regressionWidget;
 };

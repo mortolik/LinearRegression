@@ -4,18 +4,21 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QScatterSeries>
 #include "MultivariateLinearRegressionModel.hpp"
+QT_FORWARD_DECLARE_CLASS(QLineEdit);
+QT_FORWARD_DECLARE_CLASS(QPushButton);
 
 QT_CHARTS_USE_NAMESPACE
 
-    class RegressionWidget : public QWidget
+class RegressionWidget : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit RegressionWidget(QWidget* parent = nullptr);
     void setModel(MultivariateLinearRegressionModel* model);
 
 private slots:
-    void updateCharts();
+    void onRunClicked();
 
 private:
     void setupUI();
@@ -25,4 +28,10 @@ private:
     MultivariateLinearRegressionModel* m_model;
     QChartView* m_scatterChartView;
     QChartView* m_residualChartView;
+
+    QLineEdit* m_a1Input;
+    QLineEdit* m_a2Input;
+    QLineEdit* m_bInput;
+    QLineEdit* m_sigmaInput;
+    QPushButton* m_runButton;
 };
