@@ -2,9 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "MultivariateLinearRegressionModel.hpp"
-#include "RegressionWidget.hpp"
 
+namespace Regression
+{
+class MultivariateLinearRegressionModel;
+class RegressionWidget;
+}
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -13,8 +16,8 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
 
 private:
-    MultivariateLinearRegressionModel* m_model;
-    RegressionWidget* m_regressionWidget;
+    Regression::MultivariateLinearRegressionModel* m_model;
+    Regression::RegressionWidget* m_regressionWidget;
 };
 
 #endif // MAINWINDOW_H

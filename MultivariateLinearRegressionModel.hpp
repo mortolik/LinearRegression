@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QVector>
 
+namespace Regression
+{
 class MultivariateLinearRegressionModel : public QObject
 {
     Q_OBJECT
@@ -40,3 +42,4 @@ private:
 
     double trueFunction(double x1, double x2) const;
 };
+}

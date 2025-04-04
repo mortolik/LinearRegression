@@ -3,7 +3,8 @@
 #include <cmath>
 #include <QDebug>
 #include <QRandomGenerator>
-
+namespace Regression
+{
 MultivariateLinearRegressionModel::MultivariateLinearRegressionModel(QObject* parent)
     : QObject(parent)
     , m_a1(0)
@@ -159,4 +160,5 @@ QVector<QPair<QPair<double, double>, double>> MultivariateLinearRegressionModel:
 double MultivariateLinearRegressionModel::trueFunction(double x1, double x2) const
 {
     return m_a1 * x1 + m_a2 * x2 + m_b;
+}
 }

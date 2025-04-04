@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include "RegressionWidget.hpp"
+#include "MultivariateLinearRegressionModel.hpp"
 
 #include <QAction>
 #include <QMenuBar>
@@ -7,8 +9,8 @@
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
-    , m_model(new MultivariateLinearRegressionModel(this))
-    , m_regressionWidget(new RegressionWidget(this))
+    , m_model(new Regression::MultivariateLinearRegressionModel(this))
+    , m_regressionWidget(new Regression::RegressionWidget(this))
 {
     m_regressionWidget->setModel(m_model);
     setCentralWidget(m_regressionWidget);

@@ -3,12 +3,15 @@
 #include <QWidget>
 #include <QtCharts/QChartView>
 #include <QtCharts/QScatterSeries>
-#include "MultivariateLinearRegressionModel.hpp"
+
 QT_FORWARD_DECLARE_CLASS(QLineEdit);
 QT_FORWARD_DECLARE_CLASS(QPushButton);
 
 QT_CHARTS_USE_NAMESPACE
 
+namespace Regression
+{
+class MultivariateLinearRegressionModel;
 class RegressionWidget : public QWidget
 {
     Q_OBJECT
@@ -35,3 +38,4 @@ private:
     QLineEdit* m_sigmaInput;
     QPushButton* m_runButton;
 };
+}

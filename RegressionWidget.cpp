@@ -1,12 +1,16 @@
 #include "RegressionWidget.hpp"
-#include <QVBoxLayout>
+#include "MultivariateLinearRegressionModel.hpp"
+
 #include <QLabel>
 #include <QLineEdit>
 #include <QFormLayout>
+#include <QVBoxLayout>
 #include <QPushButton>
 #include <QDoubleValidator>
 #include <QtCharts/QValueAxis>
 
+namespace Regression
+{
 RegressionWidget::RegressionWidget(QWidget* parent)
     : QWidget(parent)
     , m_model(nullptr)
@@ -114,4 +118,5 @@ void RegressionWidget::createResidualPlot()
 
     chart->addSeries(series);
     chart->createDefaultAxes();
+}
 }
