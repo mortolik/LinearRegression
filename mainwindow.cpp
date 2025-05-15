@@ -9,11 +9,23 @@
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
-    , m_model(new Regression::MultivariateLinearRegressionModel(this))
-    , m_regressionWidget(new Regression::RegressionWidget(this))
 {
-    m_regressionWidget->setModel(m_model);
-    setCentralWidget(m_regressionWidget);
-    setWindowTitle("Многомерная линейная регрессия");
-    resize(800, 600);
+    // 1. Создаем модели
+    m_linearModel = new LinearRegressionModel(this);
+    m_multivariateModel = new Regression::MultivariateLinearRegressionModel(this);
+
+    // 2. Создаем виджеты
+    m_linearWidget = new LinearRegressionWidget();
+    m_linearWidget->setModel(m_linearModel);
+
+    m_multivariateWidget = new Regression::RegressionWidget();
+    m_multivariateWidget->setModel(m_multivariateModel);
+
+    // 3. Настраиваем вкладки
+    QTabWidget* tabWidget = new QTabWidget(this);
+    tabWidget->addTab(m_linearWidget, "Одномерная регрессия");
+    tabWidget->addTab(m_multivariateWidget, "Многомерная регрессия");
+
+    setCentralWidget(tabWidget);
+    resize(600, 600);
 }

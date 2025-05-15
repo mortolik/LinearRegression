@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "LinearRegressionModel.hpp"
+#include "LinearRegressionWidget.hpp"
 #include <QMainWindow>
 
 namespace Regression
@@ -16,8 +18,11 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
 
 private:
-    Regression::MultivariateLinearRegressionModel* m_model;
-    Regression::RegressionWidget* m_regressionWidget;
+
+    LinearRegressionModel* m_linearModel;
+    Regression::MultivariateLinearRegressionModel* m_multivariateModel;
+    LinearRegressionWidget* m_linearWidget;
+    Regression::RegressionWidget* m_multivariateWidget;
 };
 
 #endif // MAINWINDOW_H

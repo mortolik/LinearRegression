@@ -36,7 +36,14 @@ void RegressionWidget::setupUI()
     mainLayout->setSpacing(10);
 
     m_scatterChartView->setRenderHint(QPainter::Antialiasing);
+    m_scatterChartView->setMinimumSize(800, 300);
+    m_scatterChartView->setMaximumSize(800, 300);
+    m_scatterChartView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
     m_residualChartView->setRenderHint(QPainter::Antialiasing);
+    m_residualChartView->setMinimumSize(800, 300);
+    m_residualChartView->setMaximumSize(800, 300);
+    m_residualChartView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     mainLayout->addWidget(m_scatterChartView);
     mainLayout->addWidget(m_residualChartView);
