@@ -1,15 +1,14 @@
-#ifndef LINEARREGRESSIONWIDGET_H
-#define LINEARREGRESSIONWIDGET_H
+#pragma once
 
 #include <QWidget>
 #include "LinearRegressionModel.hpp"
-#include "qtabwidget.h"
 #include <qchartview.h>
 
 QT_BEGIN_NAMESPACE
-class QLineEdit;
-class QPushButton;
 class QCheckBox;
+class QLineEdit;
+class QTabWidget;
+class QPushButton;
 class QTableWidget;
 QT_END_NAMESPACE
 
@@ -41,5 +40,3 @@ private:
     QTabWidget* m_tabWidget;
     QTableWidget* m_tableWidget;
 };
-
-#endif // LINEARREGRESSIONWIDGET_H

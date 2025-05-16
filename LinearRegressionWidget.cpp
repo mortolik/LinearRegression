@@ -1,16 +1,15 @@
 #include "LinearRegressionWidget.hpp"
-#include "qcheckbox.h"
-#include "qdebug.h"
-#include "qlineedit.h"
-#include "qpainter.h"
-#include "qpushbutton.h"
-#include <QtCharts/QChart>
+#include <QPainter>
+#include <QLineEdit>
+#include <QCheckBox>
 #include <QChartView>
-#include <QtCharts/QScatterSeries>
-#include <QtCharts/QLineSeries>
 #include <QVBoxLayout>
 #include <QFormLayout>
+#include <QPushButton>
 #include <QTableWidget>
+#include <QtCharts/QChart>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QScatterSeries>
 
 LinearRegressionWidget::LinearRegressionWidget(QWidget* parent)
     : QWidget(parent), m_model(nullptr)
@@ -21,7 +20,8 @@ LinearRegressionWidget::LinearRegressionWidget(QWidget* parent)
 void LinearRegressionWidget::setModel(LinearRegressionModel* model)
 {
     m_model = model;
-    if (m_model) {
+    if (m_model)
+    {
         connect(m_model, &LinearRegressionModel::modelChanged, this, &LinearRegressionWidget::updateChart);
     }
 }
@@ -32,7 +32,6 @@ void LinearRegressionWidget::setupUI()
 
     m_tabWidget = new QTabWidget(this);
 
-    // График
     m_chartView = new QtCharts::QChartView(this);
     m_chartView->setRenderHint(QPainter::Antialiasing);
 
@@ -41,7 +40,6 @@ void LinearRegressionWidget::setupUI()
     chartLayout->addWidget(m_chartView);
     m_tabWidget->addTab(chartTab, "График");
 
-    // Таблица
     m_tableWidget = new QTableWidget(this);
     m_tableWidget->setColumnCount(3);
     m_tableWidget->setHorizontalHeaderLabels(QStringList() << "x" << "y_real" << "y_pred");
@@ -53,7 +51,6 @@ void LinearRegressionWidget::setupUI()
 
     layout->addWidget(m_tabWidget);
 
-    // Controls
     QFormLayout* form = new QFormLayout();
     m_aInput = new QLineEdit("1.0", this);
     m_bInput = new QLineEdit("0.0", this);
@@ -103,12 +100,12 @@ void LinearRegressionWidget::onRunClicked()
         m_sequentialXCheck->isChecked()
         );
 
-    // Заполняем таблицу
     const auto& testData = m_model->testData();
     m_tableWidget->setRowCount(testData.size());
 
     int row = 0;
-    for (const auto& [x, y_real] : testData) {
+    for (const auto& [x, y_real] : testData)
+    {
         double y_pred = m_model->predict(x);
 
         m_tableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(x, 'f', 4)));
@@ -126,15 +123,15 @@ void LinearRegressionWidget::updateChart()
     auto* chart = new QtCharts::QChart();
     chart->setTitle("Linear Regression");
 
-    // Data points
     auto* scatter = new QtCharts::QScatterSeries();
-    for (const auto& [x, y] : m_model->trainingData()) {
+    for (const auto& [x, y] : m_model->trainingData())
+    {
         scatter->append(x, y);
     }
 
-    // Regression line
     auto* line = new QtCharts::QLineSeries();
-    if (!m_model->trainingData().isEmpty()) {
+    if (!m_model->trainingData().isEmpty())
+    {
         double x1 = m_model->trainingData().first().first;
         double x2 = m_model->trainingData().last().first;
         line->append(x1, m_model->predict(x1));

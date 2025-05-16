@@ -1,6 +1,6 @@
 #include "LinearRegressionModel.hpp"
-#include <QRandomGenerator>
 #include <QtMath>
+#include <QRandomGenerator>
 
 LinearRegressionModel::LinearRegressionModel(QObject* parent)
     : QObject(parent), m_a(1.0), m_b(0.0), m_sigma(1.0),
@@ -33,7 +33,8 @@ void LinearRegressionModel::train()
     if (m_trainingData.size() < 2) return;
 
     double sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
-    for (const auto& [x, y] : m_trainingData) {
+    for (const auto& [x, y] : m_trainingData)
+    {
         sumX += x;
         sumY += y;
         sumXY += x * y;
@@ -49,7 +50,8 @@ void LinearRegressionModel::train()
 
     double yMean = sumY / n;
     double ssTotal = 0, ssResidual = 0;
-    for (const auto& [x, y] : m_trainingData) {
+    for (const auto& [x, y] : m_trainingData)
+    {
         double predicted = predict(x);
         ssTotal += (y - yMean) * (y - yMean);
         ssResidual += (y - predicted) * (y - predicted);
@@ -78,7 +80,8 @@ void LinearRegressionModel::generateTestSample(int m, double t1, double t2, bool
     if (m_trainingData.isEmpty() || m_sigma <= 0 || m_a == 0) return;
 
     auto* generator = QRandomGenerator::global();
-    for (int i = 0; i < m; ++i) {
+    for (int i = 0; i < m; ++i)
+    {
         double x = sequentialX ? (m_trainingData.size() + i + 1) : (t1 + generator->bounded(t2 - t1));
         double y = m_a * x + m_b + generator->bounded(m_sigma * 2) - m_sigma;
         m_testData.append({x, y});

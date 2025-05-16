@@ -1,5 +1,4 @@
-#ifndef LINEARREGRESSIONMODEL_H
-#define LINEARREGRESSIONMODEL_H
+#pragma once
 
 #include <QObject>
 #include <QVector>
@@ -36,4 +35,3 @@ private:
     QVector<std::pair<double, double>> m_testData;
 };
 
-#endif // LINEARREGRESSIONMODEL_H
