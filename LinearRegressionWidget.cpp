@@ -10,6 +10,7 @@
 #include <QtCharts/QLineSeries>
 #include <QVBoxLayout>
 #include <QFormLayout>
+#include <QTableWidget>
 
 LinearRegressionWidget::LinearRegressionWidget(QWidget* parent)
     : QWidget(parent), m_model(nullptr)
@@ -29,10 +30,28 @@ void LinearRegressionWidget::setupUI()
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
 
-    // Chart
+    m_tabWidget = new QTabWidget(this);
+
+    // График
     m_chartView = new QtCharts::QChartView(this);
     m_chartView->setRenderHint(QPainter::Antialiasing);
-    layout->addWidget(m_chartView);
+
+    QWidget* chartTab = new QWidget(this);
+    QVBoxLayout* chartLayout = new QVBoxLayout(chartTab);
+    chartLayout->addWidget(m_chartView);
+    m_tabWidget->addTab(chartTab, "График");
+
+    // Таблица
+    m_tableWidget = new QTableWidget(this);
+    m_tableWidget->setColumnCount(3);
+    m_tableWidget->setHorizontalHeaderLabels(QStringList() << "x" << "y_real" << "y_pred");
+
+    QWidget* tableTab = new QWidget(this);
+    QVBoxLayout* tableLayout = new QVBoxLayout(tableTab);
+    tableLayout->addWidget(m_tableWidget);
+    m_tabWidget->addTab(tableTab, "Таблица");
+
+    layout->addWidget(m_tabWidget);
 
     // Controls
     QFormLayout* form = new QFormLayout();
@@ -84,13 +103,22 @@ void LinearRegressionWidget::onRunClicked()
         m_sequentialXCheck->isChecked()
         );
 
+    // Заполняем таблицу
     const auto& testData = m_model->testData();
-    qDebug() << "---- Test Data ----";
+    m_tableWidget->setRowCount(testData.size());
+
+    int row = 0;
     for (const auto& [x, y_real] : testData) {
         double y_pred = m_model->predict(x);
-        qDebug() << "x:" << x << " | y_real:" << y_real << " | y_pred:" << y_pred;
+
+        m_tableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(x, 'f', 4)));
+        m_tableWidget->setItem(row, 1, new QTableWidgetItem(QString::number(y_real, 'f', 4)));
+        m_tableWidget->setItem(row, 2, new QTableWidgetItem(QString::number(y_pred, 'f', 4)));
+
+        ++row;
     }
 
+    m_tableWidget->resizeColumnsToContents();
 }
 
 void LinearRegressionWidget::updateChart()

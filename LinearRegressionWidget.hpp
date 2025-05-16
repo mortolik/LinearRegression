@@ -3,12 +3,14 @@
 
 #include <QWidget>
 #include "LinearRegressionModel.hpp"
+#include "qtabwidget.h"
 #include <qchartview.h>
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
 class QPushButton;
 class QCheckBox;
+class QTableWidget;
 QT_END_NAMESPACE
 
 class LinearRegressionWidget : public QWidget
@@ -35,6 +37,9 @@ private:
     QLineEdit* m_sampleSizeInput;
     QCheckBox* m_sequentialXCheck;
     QPushButton* m_runButton;
+
+    QTabWidget* m_tabWidget;
+    QTableWidget* m_tableWidget;
 };
 
 #endif // LINEARREGRESSIONWIDGET_H
