@@ -15,7 +15,7 @@ RegressionWidget::RegressionWidget(QWidget* parent)
     : QWidget(parent)
     , m_model(nullptr)
     , m_scatterChartView(new QChartView(this))
-    , m_residualChartView(new QChartView(this))
+    //, m_residualChartView(new QChartView(this))
     , m_a1Input(new QLineEdit("2.5", this))
     , m_a2Input(new QLineEdit("-1.3", this))
     , m_bInput(new QLineEdit("10.0", this))
@@ -40,13 +40,13 @@ void RegressionWidget::setupUI()
     m_scatterChartView->setMaximumSize(800, 300);
     m_scatterChartView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    m_residualChartView->setRenderHint(QPainter::Antialiasing);
-    m_residualChartView->setMinimumSize(800, 300);
-    m_residualChartView->setMaximumSize(800, 300);
-    m_residualChartView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    // m_residualChartView->setRenderHint(QPainter::Antialiasing);
+    // m_residualChartView->setMinimumSize(800, 300);
+    // m_residualChartView->setMaximumSize(800, 300);
+    // m_residualChartView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     mainLayout->addWidget(m_scatterChartView);
-    mainLayout->addWidget(m_residualChartView);
+    //mainLayout->addWidget(m_residualChartView);
 
     QFormLayout* inputLayout = new QFormLayout();
     inputLayout->addRow("Коэффициент a1:", m_a1Input);
@@ -84,7 +84,7 @@ void RegressionWidget::onRunClicked()
     m_model->train();
 
     createScatterPlot();
-    createResidualPlot();
+    //createResidualPlot();
 }
 void RegressionWidget::createScatterPlot()
 {
