@@ -5,7 +5,9 @@
 #include <QtCharts/QScatterSeries>
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit);
+QT_FORWARD_DECLARE_CLASS(QTabWidget);
 QT_FORWARD_DECLARE_CLASS(QPushButton);
+QT_FORWARD_DECLARE_CLASS(QTableWidget);
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -37,5 +39,9 @@ private:
     QLineEdit* m_bInput;
     QLineEdit* m_sigmaInput;
     QPushButton* m_runButton;
+
+    QTabWidget* m_tabWidget;
+    QTableWidget* m_tableWidget;
+
 };
 }

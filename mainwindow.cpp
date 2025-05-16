@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget* parent)
     tabWidget->addTab(m_linearWidget, "Одномерная регрессия");
     tabWidget->addTab(m_multivariateWidget, "Многомерная регрессия");
 
+    tabWidget->setCurrentIndex(1);
     setCentralWidget(tabWidget);
     resize(600, 600);
 }

@@ -1,5 +1,6 @@
 #include "RegressionWidget.hpp"
 #include "MultivariateLinearRegressionModel.hpp"
+#include "qtabwidget.h"
 
 #include <QLabel>
 #include <QLineEdit>
@@ -8,6 +9,7 @@
 #include <QPushButton>
 #include <QDoubleValidator>
 #include <QtCharts/QValueAxis>
+#include <QTableWidget>
 
 namespace Regression
 {
@@ -45,7 +47,26 @@ void RegressionWidget::setupUI()
     // m_residualChartView->setMaximumSize(800, 300);
     // m_residualChartView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    mainLayout->addWidget(m_scatterChartView);
+    m_tabWidget = new QTabWidget(this);
+
+    // Вкладка: Графики
+    QWidget* chartsTab = new QWidget(this);
+    QVBoxLayout* chartsLayout = new QVBoxLayout(chartsTab);
+    chartsLayout->addWidget(m_scatterChartView);
+    m_tabWidget->addTab(chartsTab, "Графики");
+
+    // Вкладка: Таблица предсказаний
+    m_tableWidget = new QTableWidget(this);
+    m_tableWidget->setColumnCount(4);
+    m_tableWidget->setHorizontalHeaderLabels({"x1", "x2", "y_real", "y_pred"});
+
+    QWidget* tableTab = new QWidget(this);
+    QVBoxLayout* tableLayout = new QVBoxLayout(tableTab);
+    tableLayout->addWidget(m_tableWidget);
+    m_tabWidget->addTab(tableTab, "Таблица");
+
+    mainLayout->addWidget(m_tabWidget);
+
     //mainLayout->addWidget(m_residualChartView);
 
     QFormLayout* inputLayout = new QFormLayout();
@@ -85,6 +106,26 @@ void RegressionWidget::onRunClicked()
 
     createScatterPlot();
     //createResidualPlot();
+    m_model->generateTestSample(10, 0.0, 10.0, 0.0, 10.0); // 10 точек
+
+    const auto& testData = m_model->testData();
+    m_tableWidget->setRowCount(testData.size());
+
+    int row = 0;
+    for (const auto& [inputs, y_real] : testData) {
+        double x1 = inputs.first;
+        double x2 = inputs.second;
+        double y_pred = m_model->predict(x1, x2);
+
+        m_tableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(x1, 'f', 4)));
+        m_tableWidget->setItem(row, 1, new QTableWidgetItem(QString::number(x2, 'f', 4)));
+        m_tableWidget->setItem(row, 2, new QTableWidgetItem(QString::number(y_real, 'f', 4)));
+        m_tableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(y_pred, 'f', 4)));
+
+        ++row;
+    }
+
+    m_tableWidget->resizeColumnsToContents();
 }
 void RegressionWidget::createScatterPlot()
 {
