@@ -2,6 +2,7 @@
 #include "MultivariateLinearRegressionModel.hpp"
 #include "qtabwidget.h"
 
+#include <QtDataVisualization/Q3DSurface>
 #include <QLabel>
 #include <QLineEdit>
 #include <QFormLayout>
@@ -16,7 +17,8 @@ namespace Regression
 RegressionWidget::RegressionWidget(QWidget* parent)
     : QWidget(parent)
     , m_model(nullptr)
-    , m_scatterChartView(new QChartView(this))
+    , m_surface(new Q3DSurface())
+    , m_surfaceSeries(new QSurface3DSeries())
     //, m_residualChartView(new QChartView(this))
     , m_a1Input(new QLineEdit("2.5", this))
     , m_a2Input(new QLineEdit("-1.3", this))
@@ -37,10 +39,16 @@ void RegressionWidget::setupUI()
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(10);
 
-    m_scatterChartView->setRenderHint(QPainter::Antialiasing);
-    m_scatterChartView->setMinimumSize(800, 300);
-    m_scatterChartView->setMaximumSize(800, 300);
-    m_scatterChartView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    m_surface = new Q3DSurface();
+    m_surfaceContainer = QWidget::createWindowContainer(m_surface, this);
+    m_surfaceContainer->setMinimumSize(QSize(600, 400));
+    m_surfaceContainer->setMaximumSize(QSize(800, 500));
+    m_surfaceContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    QWidget* surfaceTab = new QWidget(this);
+    QVBoxLayout* surfaceLayout = new QVBoxLayout(surfaceTab);
+    surfaceLayout->addWidget(m_surfaceContainer);
+
 
     // m_residualChartView->setRenderHint(QPainter::Antialiasing);
     // m_residualChartView->setMinimumSize(800, 300);
@@ -49,13 +57,9 @@ void RegressionWidget::setupUI()
 
     m_tabWidget = new QTabWidget(this);
 
-    // Вкладка: Графики
-    QWidget* chartsTab = new QWidget(this);
-    QVBoxLayout* chartsLayout = new QVBoxLayout(chartsTab);
-    chartsLayout->addWidget(m_scatterChartView);
-    m_tabWidget->addTab(chartsTab, "Графики");
 
-    // Вкладка: Таблица предсказаний
+    m_tabWidget->addTab(surfaceTab, "3D-график");
+
     m_tableWidget = new QTableWidget(this);
     m_tableWidget->setColumnCount(4);
     m_tableWidget->setHorizontalHeaderLabels({"x1", "x2", "y_real", "y_pred"});
@@ -87,7 +91,25 @@ void RegressionWidget::setupUI()
     m_a1Input->setValidator(new QDoubleValidator(this));
     m_a2Input->setValidator(new QDoubleValidator(this));
     m_bInput->setValidator(new QDoubleValidator(this));
-    m_sigmaInput->setValidator(new QDoubleValidator(0.1, 10.0, 2, this));
+    m_sigmaInput->setValidator(new QDoubleValidator(0.1, 100.0, 2, this));
+    m_t1Input = new QLineEdit("0.0", this);
+    m_t2Input = new QLineEdit("10.0", this);
+    m_s1Input = new QLineEdit("0.0", this);
+    m_s2Input = new QLineEdit("10.0", this);
+    m_sampleSizeInput = new QLineEdit("100", this);
+    m_testSizeInput = new QLineEdit("10", this);
+
+    m_sampleSizeInput->setValidator(new QIntValidator(2, 10000, this));
+    m_testSizeInput->setValidator(new QIntValidator(1, 10000, this));
+
+    inputLayout->addRow("Размер обучающей выборки:", m_sampleSizeInput);
+    inputLayout->addRow("Размер тестовой выборки:", m_testSizeInput);
+
+
+    inputLayout->addRow("x1: от t1 =", m_t1Input);
+    inputLayout->addRow("x1: до t2 =", m_t2Input);
+    inputLayout->addRow("x2: от s1 =", m_s1Input);
+    inputLayout->addRow("x2: до s2 =", m_s2Input);
 }
 
 void RegressionWidget::onRunClicked()
@@ -101,12 +123,17 @@ void RegressionWidget::onRunClicked()
         m_sigmaInput->text().toDouble()
         );
 
-    m_model->generateSample(100, 0.0, 10.0, 0.0, 10.0);
-    m_model->train();
+    int n = m_sampleSizeInput->text().toInt();
+    int m = m_testSizeInput->text().toInt();
+    double t1 = m_t1Input->text().toDouble();
+    double t2 = m_t2Input->text().toDouble();
+    double s1 = m_s1Input->text().toDouble();
+    double s2 = m_s2Input->text().toDouble();
 
-    createScatterPlot();
-    //createResidualPlot();
-    m_model->generateTestSample(10, 0.0, 10.0, 0.0, 10.0); // 10 точек
+    m_model->generateSample(n, t1, t2, s1, s2);
+    m_model->train();
+    createSurfacePlot();
+    m_model->generateTestSample(m, t1, t2, s1, s2);
 
     const auto& testData = m_model->testData();
     m_tableWidget->setRowCount(testData.size());
@@ -127,44 +154,64 @@ void RegressionWidget::onRunClicked()
 
     m_tableWidget->resizeColumnsToContents();
 }
-void RegressionWidget::createScatterPlot()
+
+void RegressionWidget::createSurfacePlot()
 {
-    QChart* chart = m_scatterChartView->chart();
-    chart->removeAllSeries();
-    chart->setTitle("Данные и регрессионная модель");
-
-    QScatterSeries* series = new QScatterSeries();
-    series->setName("Обучающие данные");
-    series->setMarkerSize(8.0);
-
-    const auto& data = m_model->trainingData();
-    for (const auto& point : data)
-    {
-        series->append(point.first.first, point.second);
+    if (m_surfaceSeries) {
+        m_surface->removeSeries(m_surfaceSeries);
     }
 
-    chart->addSeries(series);
-    chart->createDefaultAxes();
-}
 
-void RegressionWidget::createResidualPlot()
-{
-    QChart* chart = m_residualChartView->chart();
-    chart->removeAllSeries();
-    chart->setTitle("Остатки модели");
 
-    QScatterSeries* series = new QScatterSeries();
-    series->setName("Остатки");
-    series->setMarkerSize(8.0);
+    QSurfaceDataArray* dataArray = new QSurfaceDataArray;
+    int gridSize = 30;
+    dataArray->reserve(gridSize);
 
-    const auto& data = m_model->trainingData();
-    for (const auto& point : data)
-    {
-        double predicted = m_model->predict(point.first.first, point.first.second);
-        series->append(predicted, point.second - predicted);
+    double t1 = m_t1Input->text().toDouble();
+    double t2 = m_t2Input->text().toDouble();
+    double s1 = m_s1Input->text().toDouble();
+    double s2 = m_s2Input->text().toDouble();
+
+    for (int i = 0; i < gridSize; ++i) {
+        QSurfaceDataRow* row = new QSurfaceDataRow(gridSize);
+        double x1 = t1 + (t2 - t1) * i / (gridSize - 1);
+        for (int j = 0; j < gridSize; ++j) {
+            double x2 = s1 + (s2 - s1) * j / (gridSize - 1);
+            double y = m_model->predict(x1, x2);
+            (*row)[j].setPosition(QVector3D(x1, y, x2));
+        }
+        *dataArray << row;
     }
 
-    chart->addSeries(series);
-    chart->createDefaultAxes();
+    QSurface3DSeries* series = new QSurface3DSeries;
+    series->dataProxy()->resetArray(dataArray);
+    series->setDrawMode(QSurface3DSeries::DrawSurface);
+    series->setFlatShadingEnabled(false);
+    m_surfaceSeries = new QSurface3DSeries;
+    m_surfaceSeries->dataProxy()->resetArray(dataArray);
+    m_surfaceSeries->setDrawMode(QSurface3DSeries::DrawSurface);
+    m_surfaceSeries->setFlatShadingEnabled(false);
+    m_surface->addSeries(m_surfaceSeries);
 }
+
+// void RegressionWidget::createResidualPlot()
+// {
+//     //QChart* chart = m_residualChartView->chart();
+//     chart->removeAllSeries();
+//     chart->setTitle("Остатки модели");
+
+//     QScatterSeries* series = new QScatterSeries();
+//     series->setName("Остатки");
+//     series->setMarkerSize(8.0);
+
+//     const auto& data = m_model->trainingData();
+//     for (const auto& point : data)
+//     {
+//         double predicted = m_model->predict(point.first.first, point.first.second);
+//         series->append(predicted, point.second - predicted);
+//     }
+
+//     chart->addSeries(series);
+//     chart->createDefaultAxes();
+// }
 }
