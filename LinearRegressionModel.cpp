@@ -71,3 +71,23 @@ const QVector<std::pair<double, double>>& LinearRegressionModel::trainingData() 
 {
     return m_trainingData;
 }
+
+void LinearRegressionModel::generateTestSample(int m, double t1, double t2, bool sequentialX)
+{
+    m_testData.clear();
+    if (m_trainingData.isEmpty() || m_sigma <= 0 || m_a == 0) return;
+
+    auto* generator = QRandomGenerator::global();
+    for (int i = 0; i < m; ++i) {
+        double x = sequentialX ? (m_trainingData.size() + i + 1) : (t1 + generator->bounded(t2 - t1));
+        double y = m_a * x + m_b + generator->bounded(m_sigma * 2) - m_sigma;
+        m_testData.append({x, y});
+    }
+    emit modelChanged();
+}
+
+const QVector<std::pair<double, double>>& LinearRegressionModel::testData() const
+{
+    return m_testData;
+}
+

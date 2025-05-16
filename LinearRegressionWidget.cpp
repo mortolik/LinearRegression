@@ -1,5 +1,6 @@
 #include "LinearRegressionWidget.hpp"
 #include "qcheckbox.h"
+#include "qdebug.h"
 #include "qlineedit.h"
 #include "qpainter.h"
 #include "qpushbutton.h"
@@ -76,6 +77,20 @@ void LinearRegressionWidget::onRunClicked()
         );
 
     m_model->train();
+    m_model->generateTestSample(
+        10, // размер тестовой выборки
+        m_t1Input->text().toDouble(),
+        m_t2Input->text().toDouble(),
+        m_sequentialXCheck->isChecked()
+        );
+
+    const auto& testData = m_model->testData();
+    qDebug() << "---- Test Data ----";
+    for (const auto& [x, y_real] : testData) {
+        double y_pred = m_model->predict(x);
+        qDebug() << "x:" << x << " | y_real:" << y_real << " | y_pred:" << y_pred;
+    }
+
 }
 
 void LinearRegressionWidget::updateChart()

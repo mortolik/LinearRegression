@@ -19,6 +19,9 @@ public:
 
     const QVector<std::pair<double, double>>& trainingData() const;
 
+    void generateTestSample(int m, double t1, double t2, bool sequentialX);
+    const QVector<std::pair<double, double>>& testData() const;
+
 signals:
     void modelChanged();
 
@@ -30,6 +33,7 @@ private:
     double m_estimatedB;
     double m_rSquared;
     QVector<std::pair<double, double>> m_trainingData;
+    QVector<std::pair<double, double>> m_testData;
 };
 
 #endif // LINEARREGRESSIONMODEL_H
