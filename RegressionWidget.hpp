@@ -4,6 +4,7 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QScatterSeries>
 
+QT_FORWARD_DECLARE_CLASS(QLabel);
 QT_FORWARD_DECLARE_CLASS(QLineEdit);
 QT_FORWARD_DECLARE_CLASS(QTabWidget);
 QT_FORWARD_DECLARE_CLASS(QPushButton);
@@ -52,6 +53,10 @@ private:
     QLineEdit* m_t2Input;
     QLineEdit* m_s1Input;
     QLineEdit* m_s2Input;
+
+    QLabel* m_rLabel;
+    QLabel* m_sigma2Label;
+    QLabel* m_coefficientsLabel;
 
     QLineEdit* m_sampleSizeInput;
     QLineEdit* m_testSizeInput;

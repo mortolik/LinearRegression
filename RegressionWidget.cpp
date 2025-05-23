@@ -61,8 +61,9 @@ void RegressionWidget::setupUI()
     m_tabWidget->addTab(surfaceTab, "3D-график");
 
     m_tableWidget = new QTableWidget(this);
-    m_tableWidget->setColumnCount(4);
-    m_tableWidget->setHorizontalHeaderLabels({"x1", "x2", "y_real", "y_pred"});
+    m_tableWidget->setColumnCount(5);
+    m_tableWidget->setHorizontalHeaderLabels({"x1", "x2", "y_real", "y_pred", "ошибка"});
+
 
     QWidget* tableTab = new QWidget(this);
     QVBoxLayout* tableLayout = new QVBoxLayout(tableTab);
@@ -99,8 +100,8 @@ void RegressionWidget::setupUI()
     m_sampleSizeInput = new QLineEdit("100", this);
     m_testSizeInput = new QLineEdit("10", this);
 
-    m_sampleSizeInput->setValidator(new QIntValidator(2, 10000, this));
-    m_testSizeInput->setValidator(new QIntValidator(1, 10000, this));
+    m_sampleSizeInput->setValidator(new QIntValidator(2, 10000000, this));
+    m_testSizeInput->setValidator(new QIntValidator(1, 100000000, this));
 
     inputLayout->addRow("Размер обучающей выборки:", m_sampleSizeInput);
     inputLayout->addRow("Размер тестовой выборки:", m_testSizeInput);
@@ -110,6 +111,15 @@ void RegressionWidget::setupUI()
     inputLayout->addRow("x1: до t2 =", m_t2Input);
     inputLayout->addRow("x2: от s1 =", m_s1Input);
     inputLayout->addRow("x2: до s2 =", m_s2Input);
+    m_rLabel = new QLabel("R²: ?", this);
+    mainLayout->addWidget(m_rLabel);
+
+    m_sigma2Label = new QLabel("σ²: ?", this);
+    mainLayout->addWidget(m_sigma2Label);
+
+    m_coefficientsLabel = new QLabel("Коэффициенты: ?", this);
+    mainLayout->addWidget(m_coefficientsLabel);
+
 }
 
 void RegressionWidget::onRunClicked()
@@ -122,6 +132,9 @@ void RegressionWidget::onRunClicked()
         m_bInput->text().toDouble(),
         m_sigmaInput->text().toDouble()
         );
+    m_rLabel->setText(QString("R²: %1").arg(m_model->rSquared(), 0, 'f', 4));
+    m_sigma2Label->setText(QString("σ²: %1").arg(m_model->estimatedSigmaSquared(), 0, 'f', 4));
+
 
     int n = m_sampleSizeInput->text().toInt();
     int m = m_testSizeInput->text().toInt();
@@ -132,6 +145,13 @@ void RegressionWidget::onRunClicked()
 
     m_model->generateSample(n, t1, t2, s1, s2);
     m_model->train();
+    QVector<double> coeffs = m_model->coefficients();
+    QString coeffText = QString("Коэффициенты: a₁ predict = %1, a₂ predict = %2, b predict = %3")
+                            .arg(coeffs[0], 0, 'f', 4)
+                            .arg(coeffs[1], 0, 'f', 4)
+                            .arg(coeffs[2], 0, 'f', 4);
+    m_coefficientsLabel->setText(coeffText);
+
     createSurfacePlot();
     m_model->generateTestSample(m, t1, t2, s1, s2);
 
@@ -142,12 +162,14 @@ void RegressionWidget::onRunClicked()
     for (const auto& [inputs, y_real] : testData) {
         double x1 = inputs.first;
         double x2 = inputs.second;
-        double y_pred = m_model->predict(x1, x2);
+        double y_pred = m_model->predict(x1, x2);        
+        double error = std::abs(y_real - y_pred);
 
         m_tableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(x1, 'f', 4)));
         m_tableWidget->setItem(row, 1, new QTableWidgetItem(QString::number(x2, 'f', 4)));
         m_tableWidget->setItem(row, 2, new QTableWidgetItem(QString::number(y_real, 'f', 4)));
         m_tableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(y_pred, 'f', 4)));
+        m_tableWidget->setItem(row, 4, new QTableWidgetItem(QString::number(error, 'f', 4)));
 
         ++row;
     }
@@ -160,8 +182,6 @@ void RegressionWidget::createSurfacePlot()
     if (m_surfaceSeries) {
         m_surface->removeSeries(m_surfaceSeries);
     }
-
-
 
     QSurfaceDataArray* dataArray = new QSurfaceDataArray;
     int gridSize = 30;

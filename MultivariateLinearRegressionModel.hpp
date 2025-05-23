@@ -23,6 +23,8 @@ public:
     QVector<QPair<QPair<double, double>, double>> trainingData() const;
     QVector<QPair<QPair<double, double>, double>> testData() const;
 
+    double estimatedSigmaSquared() const { return m_estimatedSigmaSquared; }
+
 signals:
     void modelChanged();
     void coefficientsUpdated();
@@ -39,7 +41,7 @@ private:
     QVector<QPair<QPair<double, double>, double>> m_trainingData;
     QVector<QPair<QPair<double, double>, double>> m_testData;
     double m_rSquared;
-
+    double m_estimatedSigmaSquared;
     double trueFunction(double x1, double x2) const;
 };
 }

@@ -111,6 +111,9 @@ void MultivariateLinearRegressionModel::train()
 
     m_rSquared = 1 - (ssResidual / ssTotal);
 
+    int p = 3;
+    m_estimatedSigmaSquared = ssResidual / (n - p);
+
     emit coefficientsUpdated();
     emit rSquaredChanged();
 }
