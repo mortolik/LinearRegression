@@ -11,14 +11,15 @@
 #include <QDoubleValidator>
 #include <QtCharts/QValueAxis>
 #include <QTableWidget>
+#include <QScatter3DSeries>
 
 namespace Regression
 {
 RegressionWidget::RegressionWidget(QWidget* parent)
     : QWidget(parent)
     , m_model(nullptr)
-    , m_surface(new Q3DSurface())
-    , m_surfaceSeries(new QSurface3DSeries())
+    // , m_surface(new Q3DSurface())
+    // , m_surfaceSeries(new QSurface3DSeries())
     //, m_residualChartView(new QChartView(this))
     , m_a1Input(new QLineEdit("2.5", this))
     , m_a2Input(new QLineEdit("-1.3", this))
@@ -39,15 +40,23 @@ void RegressionWidget::setupUI()
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(10);
 
-    m_surface = new Q3DSurface();
-    m_surfaceContainer = QWidget::createWindowContainer(m_surface, this);
-    m_surfaceContainer->setMinimumSize(QSize(600, 400));
-    m_surfaceContainer->setMaximumSize(QSize(800, 500));
+    m_tabWidget = new QTabWidget(this);
+
+    m_surfaceGraph = new Q3DSurface();
+    m_surfaceContainer = QWidget::createWindowContainer(m_surfaceGraph, this);
+    m_surfaceContainer->setMinimumSize(400, 400);
     m_surfaceContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    QWidget* surfaceTab = new QWidget(this);
-    QVBoxLayout* surfaceLayout = new QVBoxLayout(surfaceTab);
-    surfaceLayout->addWidget(m_surfaceContainer);
+    m_scatterGraph = new Q3DScatter();
+    m_scatterContainer = QWidget::createWindowContainer(m_scatterGraph, this);
+    m_scatterContainer->setMinimumSize(400, 400);
+    m_scatterContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    QWidget* graphTab = new QWidget(this);
+    QHBoxLayout* graphLayout = new QHBoxLayout(graphTab);
+    graphLayout->addWidget(m_surfaceContainer);
+    graphLayout->addWidget(m_scatterContainer);
+    m_tabWidget->addTab(graphTab, "3D график");
 
 
     // m_residualChartView->setRenderHint(QPainter::Antialiasing);
@@ -55,10 +64,7 @@ void RegressionWidget::setupUI()
     // m_residualChartView->setMaximumSize(800, 300);
     // m_residualChartView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    m_tabWidget = new QTabWidget(this);
 
-
-    m_tabWidget->addTab(surfaceTab, "3D-график");
 
     m_tableWidget = new QTableWidget(this);
     m_tableWidget->setColumnCount(5);
@@ -151,8 +157,9 @@ void RegressionWidget::onRunClicked()
                             .arg(coeffs[1], 0, 'f', 4)
                             .arg(coeffs[2], 0, 'f', 4);
     m_coefficientsLabel->setText(coeffText);
+    createSurfaceGraph(); // создаём плоскость
+    createScatterGraph(); // создаём точки
 
-    createSurfacePlot();
     m_model->generateTestSample(m, t1, t2, s1, s2);
 
     const auto& testData = m_model->testData();
@@ -176,42 +183,62 @@ void RegressionWidget::onRunClicked()
 
     m_tableWidget->resizeColumnsToContents();
 }
-
-void RegressionWidget::createSurfacePlot()
+void RegressionWidget::createSurfaceGraph()
 {
-    if (m_surfaceSeries) {
-        m_surface->removeSeries(m_surfaceSeries);
-    }
+    m_surfaceGraph->removeSeries(m_surfaceGraph->seriesList().value(0, nullptr));
 
-    QSurfaceDataArray* dataArray = new QSurfaceDataArray;
+    QSurfaceDataArray* surfaceData = new QSurfaceDataArray;
     int gridSize = 30;
-    dataArray->reserve(gridSize);
+    surfaceData->reserve(gridSize);
 
     double t1 = m_t1Input->text().toDouble();
     double t2 = m_t2Input->text().toDouble();
     double s1 = m_s1Input->text().toDouble();
     double s2 = m_s2Input->text().toDouble();
 
-    for (int i = 0; i < gridSize; ++i) {
+    for (int i = 0; i < gridSize; ++i)
+    {
         QSurfaceDataRow* row = new QSurfaceDataRow(gridSize);
         double x1 = t1 + (t2 - t1) * i / (gridSize - 1);
-        for (int j = 0; j < gridSize; ++j) {
+        for (int j = 0; j < gridSize; ++j)
+        {
             double x2 = s1 + (s2 - s1) * j / (gridSize - 1);
             double y = m_model->predict(x1, x2);
             (*row)[j].setPosition(QVector3D(x1, y, x2));
         }
-        *dataArray << row;
+        *surfaceData << row;
     }
 
-    QSurface3DSeries* series = new QSurface3DSeries;
-    series->dataProxy()->resetArray(dataArray);
-    series->setDrawMode(QSurface3DSeries::DrawSurface);
-    series->setFlatShadingEnabled(false);
-    m_surfaceSeries = new QSurface3DSeries;
-    m_surfaceSeries->dataProxy()->resetArray(dataArray);
-    m_surfaceSeries->setDrawMode(QSurface3DSeries::DrawSurface);
-    m_surfaceSeries->setFlatShadingEnabled(false);
-    m_surface->addSeries(m_surfaceSeries);
+    QSurface3DSeries* surfaceSeries = new QSurface3DSeries;
+    surfaceSeries->dataProxy()->resetArray(surfaceData);
+    surfaceSeries->setDrawMode(QSurface3DSeries::DrawSurface);
+    surfaceSeries->setFlatShadingEnabled(false);
+    m_surfaceGraph->addSeries(surfaceSeries);
+}
+
+void RegressionWidget::createScatterGraph()
+{
+    m_scatterGraph->removeSeries(m_scatterGraph->seriesList().value(0, nullptr));
+
+    const auto& data = m_model->trainingData();
+    QScatterDataArray* scatterData = new QScatterDataArray;
+    scatterData->reserve(data.size());
+
+    for (const auto& [inputs, y] : data)
+    {
+        float x1 = inputs.first;
+        float x2 = inputs.second;
+        float z = y;
+        scatterData->append(QScatterDataItem(QVector3D(x1, z, x2)));
+    }
+
+    QScatter3DSeries* scatterSeries = new QScatter3DSeries;
+    scatterSeries->dataProxy()->addItems(*scatterData);
+    scatterSeries->setMesh(QAbstract3DSeries::MeshSphere);
+    scatterSeries->setItemSize(0.1f);
+    scatterSeries->setBaseColor(Qt::red);
+
+    m_scatterGraph->addSeries(scatterSeries);
 }
 
 // void RegressionWidget::createResidualPlot()

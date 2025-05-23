@@ -41,9 +41,10 @@ private:
 
     MultivariateLinearRegressionModel* m_model;
 
-    Q3DSurface* m_surface;
-    QSurface3DSeries* m_surfaceSeries = nullptr;
-    QWidget* m_surfaceContainer;
+    Q3DSurface* m_surfaceGraph = nullptr;
+    Q3DScatter* m_scatterGraph = nullptr;
+    QWidget* m_surfaceContainer = nullptr;
+    QWidget* m_scatterContainer = nullptr;
 
     QLineEdit* m_a1Input;
     QLineEdit* m_a2Input;
@@ -66,5 +67,7 @@ private:
     QTabWidget* m_tabWidget;
     QTableWidget* m_tableWidget;
 
+    void createSurfaceGraph();
+    void createScatterGraph();
 };
 }
